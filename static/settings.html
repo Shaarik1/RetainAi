@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Offer Logic - RetainAI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #020617; color: white; }
+        .mesh-bg {
+            background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.1), transparent 25%), radial-gradient(circle at 85% 30%, rgba(147, 51, 234, 0.1), transparent 25%);
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-dark {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .input-dark:focus { border-color: #3b82f6; outline: none; }
+    </style>
+</head>
+<body class="mesh-bg flex h-screen overflow-hidden">
+
+    <aside class="w-64 glass-panel border-r-0 border-r border-white/10 hidden md:flex flex-col">
+        <div class="p-6">
+            <a href="/dashboard" class="flex items-center gap-2 hover:opacity-80 transition group">
+                <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-900/50 group-hover:scale-105 transition">R</div>
+                <span class="font-bold text-lg tracking-tight text-white">RetainAI</span>
+            </a>
+        </div>
+        <nav class="flex-1 px-4 space-y-1">
+            <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">Overview</a>
+            <a href="/settings" class="flex items-center gap-3 px-4 py-3 bg-blue-600/20 text-blue-400 rounded-lg font-medium transition">Offer Logic</a>
+            <a href="/setup" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition">Integration</a>
+            <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-lg transition mt-4">Sign Out</a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-8 relative">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-white">Offer Logic</h1>
+            <p class="text-gray-400">Design the strategy to save your customers.</p>
+        </header>
+
+        <div class="max-w-4xl glass-panel rounded-2xl p-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">1. When user says:</label>
+                        <select id="trigger" class="w-full input-dark rounded-lg px-4 py-3">
+                            <option value="expensive">It's too expensive</option>
+                            <option value="technical">Technical issues</option>
+                            <option value="other">Found a better alternative</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">2. Offer them:</label>
+                        <select id="offerType" onchange="toggleInputs()" class="w-full input-dark rounded-lg px-4 py-3">
+                            <option value="pause">Pause Subscription</option>
+                            <option value="percentage_discount">Percentage Discount</option>
+                            <option value="support">VIP Support Call</option>
+                        </select>
+                    </div>
+
+                    <div id="value-group">
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Value (Months or %)</label>
+                        <input type="number" id="offerValue" class="w-full input-dark rounded-lg px-4 py-3" placeholder="e.g. 2">
+                    </div>
+
+                    <div id="code-group" class="hidden">
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Stripe Coupon ID</label>
+                        <input type="text" id="couponCode" class="w-full input-dark rounded-lg px-4 py-3" placeholder="e.g. SAVE20">
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">3. Headline Text</label>
+                        <input type="text" id="offerTitle" class="w-full input-dark rounded-lg px-4 py-3" placeholder="Wait! Before you go...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">4. Persuasion Message</label>
+                        <textarea id="offerBody" rows="4" class="w-full input-dark rounded-lg px-4 py-3" placeholder="We'd hate to lose you. Here is a special offer..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-white/10 flex justify-between items-center">
+                <div class="text-sm text-gray-500">
+                    Saving for project: <input type="text" id="projectId" class="bg-transparent border-b border-gray-600 focus:border-blue-500 outline-none w-24 text-gray-300" placeholder="username">
+                </div>
+                <button onclick="saveRule()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-xl transition shadow-lg shadow-blue-900/50">
+                    Save Logic Rule
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        function toggleInputs() {
+            const type = document.getElementById('offerType').value;
+            if (type === 'percentage_discount') {
+                document.getElementById('value-group').classList.remove('hidden');
+                document.getElementById('code-group').classList.remove('hidden');
+            } else if (type === 'pause') {
+                document.getElementById('value-group').classList.remove('hidden');
+                document.getElementById('code-group').classList.add('hidden');
+            } else {
+                document.getElementById('value-group').classList.add('hidden');
+                document.getElementById('code-group').classList.add('hidden');
+            }
+        }
+
+        async function saveRule() {
+            const data = {
+                project_id: document.getElementById('projectId').value || 'admin',
+                trigger: document.getElementById('trigger').value,
+                type: document.getElementById('offerType').value,
+                value: parseInt(document.getElementById('offerValue').value) || 0,
+                title: document.getElementById('offerTitle').value,
+                body: document.getElementById('offerBody').value,
+                code: document.getElementById('couponCode').value || ""
+            };
+
+            const btn = document.querySelector('button');
+            btn.innerText = "Saving...";
+            
+            await fetch('/api/create-offer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            btn.innerText = "✅ Rule Saved!";
+            setTimeout(() => btn.innerText = "Save Logic Rule", 2000);
+        }
+    </script>
+</body>
+</html>
