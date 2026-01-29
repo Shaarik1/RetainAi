@@ -1,5 +1,8 @@
 import os
 import datetime
+from dotenv import load_dotenv
+
+load_dotenv() 
 from fastapi import FastAPI, HTTPException, Request, Depends, status, Response
 from fastapi.staticfiles import StaticFiles 
 from fastapi.responses import FileResponse, RedirectResponse
@@ -12,9 +15,9 @@ from psycopg2.extras import RealDictCursor
 # --- CONFIGURATION ---
 # We now get the DB URL from Render's Environment Variables
 DATABASE_URL = os.environ.get("DATABASE_URL") 
-stripe.api_key = "sk_test_..." # PASTE STRIPE KEY HERE
+stripe.api_key = os.environ.get("STRIPE_API_KEY")
 COMMISSION_RATE = 0.20 
-SESSION_TOKEN = "secret_session_token_xyz"
+SESSION_TOKEN = os.environ.get("SESSION_TOKEN", "default_secret_for_local_testing")
 
 app = FastAPI()
 
