@@ -8,7 +8,7 @@ function initSaveBot(buttonId, customerId) {
         // 1. STOP the normal cancellation
         event.preventDefault(); 
         
-        // 2. Open your popup (iframe or modal)
+        // 2. Open popup (iframe or modal)
         openMyRetentionModal(customerId); 
     });
 }
