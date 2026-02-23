@@ -12,8 +12,7 @@ import stripe
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-# --- CONFIGURATION ---
-# We now get the DB URL from Render's Environment Variables
+# Environment variables to test API keys
 DATABASE_URL = os.environ.get("DATABASE_URL") 
 stripe.api_key = os.environ.get("STRIPE_API_KEY")
 COMMISSION_RATE = 0.20 
@@ -21,7 +20,7 @@ SESSION_TOKEN = os.environ.get("SESSION_TOKEN", "default_secret_for_local_testin
 
 app = FastAPI()
 
-# --- DATABASE ENGINE (POSTGRES) ---
+# Postgres db
 def get_db_connection():
     # Connect to the external Postgres server
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
@@ -76,10 +75,10 @@ def init_db():
     cur.close()
     conn.close()
 
-# Initialize on startup
+# Initialise on startup
 init_db()
 
-# --- MODELS ---
+
 class LoginRequest(BaseModel):
     username: str
     password: str
@@ -93,13 +92,13 @@ class OfferRequest(BaseModel):
     body: str   
     code: str
 
-# --- AUTH ---
+# Auth
 def get_current_user(request: Request):
     token = request.cookies.get("session_token")
     if not token: raise HTTPException(status_code=401, detail="Unauthorized")
     return "admin" 
 
-# --- ROUTES ---
+# Routes
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 @app.get("/")
@@ -111,7 +110,7 @@ async def login_page(): return FileResponse('static/login.html')
 @app.get("/signup")
 async def signup_page(): return FileResponse('static/signup.html')
 
-# --- API ENDPOINTS (Updated for Postgres %s syntax) ---
+# API Endpoints
 
 @app.post("/api/signup")
 async def api_signup(creds: LoginRequest):
@@ -203,7 +202,7 @@ async def create_offer(offer: OfferRequest, user: str = Depends(get_current_user
     conn = get_db_connection()
     cur = conn.cursor()
     
-    # Check existing
+    # Check existing 
     cur.execute("SELECT id FROM offers WHERE project_id = %s AND trigger_rule = %s", (offer.project_id, offer.trigger))
     existing = cur.fetchone()
     
