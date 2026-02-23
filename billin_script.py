@@ -14,7 +14,7 @@ def run_monthly_billing():
             total_saved_revenue += save.saved_amount
             save.status = "verified"
         else:
-            save.status = "failed" # They cancelled anyway, you don't charge
+            save.status = "failed" # They cancelled anyway, I don't charge
             
     # Calculate your invoice
     my_invoice_amount = total_saved_revenue * 0.20
@@ -26,9 +26,7 @@ def run_monthly_billing():
         currency="usd"
     )
 
-    # --- ADD THIS TO FIX THE YELLOW 'database' LINE ---
-
-# We create a simple class to act as our "Database" for now
+# created a fake database to simulate real customers to test my application 
 class FakeDatabase:
     def __init__(self):
         self.data = []
@@ -43,7 +41,7 @@ class FakeDatabase:
         self.data.append(entry)
         print(f"Saved to database: {entry}")
 
-# Now we actually CREATE the variable 'database'
+# Creating the variable 'database'
 database = FakeDatabase() 
 
 def stripe_check_if_active(customer_id):
@@ -65,5 +63,3 @@ def stripe_check_if_active(customer_id):
     except Exception as e:
         print(f"Error checking Stripe: {e}")
         return False
-
-# --------------------------------------------------
